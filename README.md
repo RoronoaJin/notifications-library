@@ -23,7 +23,7 @@ You can set the sender of the notifications
 ```
 ## API
 
-There are different methods offered by the NotificationCenter
+There are different methods offered by the NotificationCenter class
 
 ### getNotifications()
 This method allow the user to get the notifications list

@@ -2,7 +2,7 @@ import { NotificationCenter } from '../src/index'
 import { Notification } from '../src/types';
 import 'jest-fetch-mock';
 
-describe('getNotifications method', () => {
+describe('getNotificationByID method', () => {
     let notificationCenterObject = new NotificationCenter;
 
     beforeAll(() => {
@@ -13,15 +13,24 @@ describe('getNotifications method', () => {
         notificationCenterObject.notificationsList = [];
     });
 
-    test('If getNotifications method is called for a local notification list, it should return the same local notifications list', async () => {
+    test('If getNotificationByID is called for a local notification list, it should return the notification whose id is taken as a parameter', async () => {
         const localNotificationsList = notificationCenterObject.notificationsList;
 
-        const expectedNotificationsList = await notificationCenterObject.getNotifications();
+        const notification = {
+            title: 'There is a new notification',
+            message: 'Hello, im the only notification!'
+        };
 
-        expect(expectedNotificationsList).toEqual(localNotificationsList);
+        await notificationCenterObject.sendNotification(notification);
+
+        let lastNotification = localNotificationsList[localNotificationsList.length - 1];
+
+        const expectedNotification = await notificationCenterObject.getNotificationByID(lastNotification.id);
+
+        expect(expectedNotification?.data).toEqual(notification);
     });
 
-    test('If getNotifications method is called for a remote notification list, it should return the same notifications list of the server', async () => {
+    test('If getNotificationByID is called for a remote notification list, it should return the notification whose id is taken as a parameter', async () => {
         const configuration = { fetchUrl: 'anyValidURL1', createUrl: 'anyValidURL2', updateUrl: 'anyValidURL3' };
         notificationCenterObject.setConfig(configuration);
 
@@ -53,8 +62,12 @@ describe('getNotifications method', () => {
 
         fetchMock.mockResponse(JSON.stringify(mockNotificationsList));
 
-        const expectedNotificationsList = await notificationCenterObject.getNotifications();
+        const remoteNotificationsList = await notificationCenterObject.getNotifications();
 
-        expect(expectedNotificationsList).toEqual(mockNotificationsList);
+        let lastNotification = remoteNotificationsList[remoteNotificationsList.length - 1];
+
+        const expectedNotification = await notificationCenterObject.getNotificationByID(lastNotification.id);
+
+        expect(expectedNotification).toEqual(lastNotification);
     });
 });

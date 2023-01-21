@@ -2,7 +2,7 @@ import { NotificationCenter } from '../src/index'
 import { Notification } from '../src/types';
 import 'jest-fetch-mock';
 
-describe('setRead method', () => {
+describe('markAllAsRead method', () => {
     let notificationCenterObject = new NotificationCenter;
 
     beforeAll(() => {
@@ -13,22 +13,29 @@ describe('setRead method', () => {
         notificationCenterObject.notificationsList = [];
     });
 
-    test('If setRead method is called for a local notification list, it should mark as read the notification whose id is taken as a parameter', async () => {
+    test('If markAllAsRead method is called for a local notification list, it should mark as read all the notifications', async () => {
         const localNotificationsList = notificationCenterObject.notificationsList;
 
-        const newNotification = {
+        const firstNotification = {
             title: 'There is a new notification',
-            message: 'Hello, im the first notification!'
+            message: 'Hello, im the only notification!'
         };
 
-        await notificationCenterObject.sendNotification(newNotification);
+        await notificationCenterObject.sendNotification(firstNotification);
 
-        let lastNotification = localNotificationsList[localNotificationsList.length - 1];
-        await notificationCenterObject.setRead(lastNotification.id);
-        expect(lastNotification.readAt).toBeDefined();
+        const secondNotification = {
+            title: 'There is a new notification',
+            message: 'Hello, im the only notification!'
+        };
+
+        await notificationCenterObject.sendNotification(secondNotification);
+
+        await notificationCenterObject.markAllAsRead();
+
+        localNotificationsList.forEach(notification => { expect(notification.readAt).toBeDefined() });
     });
 
-    test('If setRead method is called for a remote notifcation list, it should mark as read the notification whose id is taken as a parameter', async () => {
+    test('If markAllAsRead method is called for a remote notification list, it should mark as read all the notifications', async () => {
         const configuration = { fetchUrl: 'anyValidURL1', createUrl: 'anyValidURL2', updateUrl: 'anyValidURL3' };
         notificationCenterObject.setConfig(configuration);
 
@@ -69,19 +76,9 @@ describe('setRead method', () => {
         fetchMock.mockResponse(JSON.stringify(mockNotificationsList));
 
         const serverNotificationsList = await notificationCenterObject.getNotifications();
-        let lastElement = serverNotificationsList[serverNotificationsList.length - 1];
-        await notificationCenterObject.setRead(lastElement.id);
-        expect(lastElement.readAt).toBeDefined();
-    });
 
-    test('If setRead method is launched, it should call the subscribed callback', async () => {
-        const fn = jest.fn();
-        notificationCenterObject.addSubscriber(fn);
+        await notificationCenterObject.markAllAsRead();
 
-        const serverNotificationsList = await notificationCenterObject.getNotifications();
-        let lastElement = serverNotificationsList[serverNotificationsList.length - 1];
-        await notificationCenterObject.setRead(lastElement.id);
-
-        expect(fn).toBeCalled();
+        serverNotificationsList.forEach(notification => { expect(notification.readAt).toBeDefined() });
     });
 });

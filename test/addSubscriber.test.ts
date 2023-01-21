@@ -1,10 +1,10 @@
 import { NotificationCenter } from '../src/index'
 
-describe('After creating the singleton instance...', () => {
+describe('addSubscriber method', () => {
     let notificationCenterObject = new NotificationCenter;
     let subscribersList = notificationCenterObject.subscribers;
 
-    test('If subscribe method is launched, it should subscribe the callback passed as argument into the subscribers list', async () => {
+    test('If addSubscriber method is called, it should subscribe the callback passed as argument into the subscribers list', async () => {
 
         expect(subscribersList).toHaveLength(0);
 

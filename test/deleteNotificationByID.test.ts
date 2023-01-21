@@ -2,7 +2,7 @@ import { NotificationCenter } from '../src/index'
 import { Notification } from '../src/types';
 import 'jest-fetch-mock';
 
-describe('getNotifications method', () => {
+describe('deleteNotificationByID method', () => {
     let notificationCenterObject = new NotificationCenter;
 
     beforeAll(() => {
@@ -13,15 +13,22 @@ describe('getNotifications method', () => {
         notificationCenterObject.notificationsList = [];
     });
 
-    test('If getNotifications method is called for a local notification list, it should return the same local notifications list', async () => {
-        const localNotificationsList = notificationCenterObject.notificationsList;
+    test('If deleteNotificationByID is called for a local notification list, it should delete the notification whose id is taken as a parameter', async () => {
+        const notification = {
+            title: 'There is a new notification',
+            message: 'Hello, im the only notification!'
+        };
 
-        const expectedNotificationsList = await notificationCenterObject.getNotifications();
+        await notificationCenterObject.sendNotification(notification);
 
-        expect(expectedNotificationsList).toEqual(localNotificationsList);
+        let lastNotification = notificationCenterObject.notificationsList[notificationCenterObject.notificationsList.length - 1];
+
+        await notificationCenterObject.deleteNotificationByID(lastNotification.id);
+
+        expect(notificationCenterObject.notificationsList).toHaveLength(0);
     });
 
-    test('If getNotifications method is called for a remote notification list, it should return the same notifications list of the server', async () => {
+    test('If deleteNotificationByID is called for a remote notification list, it should delete the notification whose id is taken as a parameter', async () => {
         const configuration = { fetchUrl: 'anyValidURL1', createUrl: 'anyValidURL2', updateUrl: 'anyValidURL3' };
         notificationCenterObject.setConfig(configuration);
 
@@ -53,8 +60,12 @@ describe('getNotifications method', () => {
 
         fetchMock.mockResponse(JSON.stringify(mockNotificationsList));
 
-        const expectedNotificationsList = await notificationCenterObject.getNotifications();
+        await notificationCenterObject.getNotifications();
 
-        expect(expectedNotificationsList).toEqual(mockNotificationsList);
+        let lastNotification = notificationCenterObject.notificationsList[notificationCenterObject.notificationsList.length - 1];
+
+        await notificationCenterObject.deleteNotificationByID(lastNotification.id);
+
+        expect(notificationCenterObject.notificationsList).toHaveLength(2);
     });
 });
