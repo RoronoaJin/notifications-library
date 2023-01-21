@@ -12,6 +12,7 @@ If you want to use a remote system, set the configuration
   const configuration = { fetchUrl: 'anyValidURL1', 
                           createUrl: 'anyValidURL2',               
                           updateUrl:'anyValidURL3' };
+
   notificationCenterObject.setConfig(configuration);
 ```
 otherwise you can have a full local system.
@@ -31,24 +32,52 @@ This method allow the user to get the notifications list
 await notificationCenterObject.getNotifications();
 ```
 
-### sendNotification()
+### getNotificationByID(id: string)
+This method allow the user to get a specific notification by passing its ID as argument
+```TypeScript
+// notification.id is the id of the notification you want to get
+const requestedNotification = await notificationCenterObject.getNotificationByID(notification.id);
+```
+
+### sendNotification(data: any)
 This method allow the user to send a notification
 ```TypeScript
 const notification = {
     title: 'There is a new notification',
     message: 'Hello, im the first notification!'
 };
+
 await notificationCenterObject.sendNotification(notification);
 ```
 
-### setRead()
-This method allow the user to mark a notification as read
+### setRead(id: string)
+This method allow the user to mark a specific notification by passing its ID as argument
 ```TypeScript
 // notification.id is the id of the notification you want to mark as read
 await notificationCenterObject.setRead(notification.id);
 ```
 
-### addSubscriber()
+### markAllAsRead()
+This method allow the user to mark all the notifications as read
+```TypeScript
+// notification.id is the id of the notification you want to mark as read
+await notificationCenterObject.setRead(notification.id);
+```
+
+### deleteNotificationByID(id: string)
+This method allow the user to delete a specific notification by passing its ID as argument
+```TypeScript
+// notification.id is the id of the notification you want to delete
+await notificationCenterObject.deleteNotificationByID(notification.id);
+```
+
+### deleteAllNotifications()
+This method allow the user to delete all the notifications
+```TypeScript
+await notificationCenterObject.deleteAllNotifications();
+```
+
+### addSubscriber(callback: SubscribeCallback)
 This method allow the user to subscribe to the NotificationCenter and get notify each time a new notification is sent or read
 ```TypeScript
 // This function will be called each time a new notification is sent or read
