@@ -35,7 +35,7 @@ export class NotificationCenter {
         this.subscribers.forEach(callback => callback(notification));
     }
 
-    async getNotifications(): Promise<Notification[]> {
+    async getAllNotifications(): Promise<Notification[]> {
         if (this.config) {
             try {
                 const response = await fetch(this.config.fetchUrl);
@@ -55,7 +55,7 @@ export class NotificationCenter {
         if (!id) {
             throw new Error('Invalid ID');
         }
-        const notifications = await this.getNotifications();
+        const notifications = await this.getAllNotifications();
         return notifications.find(notification => notification.id === id) || null;
     }
 
@@ -87,7 +87,7 @@ export class NotificationCenter {
         return newNotification;
     }
 
-    async setRead(id: string): Promise<void> {
+    async setNotficationAsRead(id: string): Promise<void> {
         if (!id) {
             throw new Error('Invalid ID');
         }

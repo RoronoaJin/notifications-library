@@ -4,12 +4,10 @@ import 'jest-fetch-mock';
 
 describe('markAllAsRead method', () => {
     let notificationCenterObject = new NotificationCenter;
-
-    beforeAll(() => {
-        fetchMock.resetMocks();
-    });
+    const configuration = { fetchUrl: 'anyValidURL1', createUrl: 'anyValidURL2', updateUrl: 'anyValidURL3' };
 
     beforeEach(() => {
+        fetchMock.resetMocks();
         notificationCenterObject.notificationsList = [];
     });
 
@@ -35,8 +33,31 @@ describe('markAllAsRead method', () => {
         localNotificationsList.forEach(notification => { expect(notification.readAt).toBeDefined() });
     });
 
+    test('If markAllAsRead method is called for a remote notification list, it should throw an error if there is something wrong with the HTTP call', async () => {
+        notificationCenterObject.setConfig(configuration);
+
+        fetchMock.mockRejectOnce(new Error('Error: something went wrong'));
+
+        try {
+            await notificationCenterObject.markAllAsRead();
+        } catch (error) {
+            expect(error.message).toEqual('Error: something went wrong');
+        }
+    });
+
+    test('If markAllAsRead method is called for a remote notification list, it should throw an error if the server response is not ok', async () => {
+        notificationCenterObject.setConfig(configuration);
+
+        fetchMock.mockResponse(JSON.stringify({ ok: false }), { status: 400 });
+
+        try {
+            await notificationCenterObject.markAllAsRead();
+        } catch (error) {
+            expect(error.message).toEqual(400);
+        }
+    });
+
     test('If markAllAsRead method is called for a remote notification list, it should mark as read all the notifications', async () => {
-        const configuration = { fetchUrl: 'anyValidURL1', createUrl: 'anyValidURL2', updateUrl: 'anyValidURL3' };
         notificationCenterObject.setConfig(configuration);
 
         const mockNotificationsList: Notification[] = [{
@@ -75,10 +96,10 @@ describe('markAllAsRead method', () => {
 
         fetchMock.mockResponse(JSON.stringify(mockNotificationsList));
 
-        const serverNotificationsList = await notificationCenterObject.getNotifications();
+        const remoteNotificationsList = await notificationCenterObject.getAllNotifications();
 
         await notificationCenterObject.markAllAsRead();
 
-        serverNotificationsList.forEach(notification => { expect(notification.readAt).toBeDefined() });
+        remoteNotificationsList.forEach(notification => { expect(notification.readAt).toBeDefined() });
     });
 });

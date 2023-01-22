@@ -26,10 +26,10 @@ You can set the sender of the notifications
 
 There are different methods offered by the NotificationCenter class
 
-### getNotifications()
+### getAllNotifications()
 This method allow the user to get the notifications list
 ```TypeScript
-await notificationCenterObject.getNotifications();
+await notificationCenterObject.getAllNotifications();
 ```
 
 ### getNotificationByID(id: string)
@@ -50,18 +50,17 @@ const notification = {
 await notificationCenterObject.sendNotification(notification);
 ```
 
-### setRead(id: string)
+### setNotficationAsRead(id: string)
 This method allow the user to mark a specific notification by passing its ID as argument
 ```TypeScript
 // notification.id is the id of the notification you want to mark as read
-await notificationCenterObject.setRead(notification.id);
+await notificationCenterObject.setNotficationAsRead(notification.id);
 ```
 
 ### markAllAsRead()
 This method allow the user to mark all the notifications as read
 ```TypeScript
-// notification.id is the id of the notification you want to mark as read
-await notificationCenterObject.setRead(notification.id);
+await notificationCenterObject.markAllAsRRead();
 ```
 
 ### deleteNotificationByID(id: string)

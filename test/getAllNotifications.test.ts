@@ -2,7 +2,7 @@ import { NotificationCenter } from '../src/index'
 import { Notification } from '../src/types';
 import 'jest-fetch-mock';
 
-describe('deleteAllNotifications method', () => {
+describe('getAllNotifications method', () => {
     let notificationCenterObject = new NotificationCenter;
     const configuration = { fetchUrl: 'anyValidURL1', createUrl: 'anyValidURL2', updateUrl: 'anyValidURL3' };
 
@@ -11,44 +11,39 @@ describe('deleteAllNotifications method', () => {
         notificationCenterObject.notificationsList = [];
     });
 
-    test('If deleteAllNotifications is called for a local notification list, it should delete all the notifications from the list', async () => {
-        const notification = {
-            title: 'There is a new notification',
-            message: 'Hello, im the only notification!'
-        };
+    test('If getAllNotifications method is called for a local notification list, it should return the same local notifications list', async () => {
+        const localNotificationsList = notificationCenterObject.notificationsList;
 
-        await notificationCenterObject.sendNotification(notification);
+        const expectedNotificationsList = await notificationCenterObject.getAllNotifications();
 
-        await notificationCenterObject.deleteAllNotifications();
-
-        expect(notificationCenterObject.notificationsList).toHaveLength(0);
+        expect(expectedNotificationsList).toEqual(localNotificationsList);
     });
 
-    test('If deleteAllNotifications method is called for a remote notification list, it should throw an error if there is something wrong with the HTTP call', async () => {
+    test('If getAllNotifications method is called for a remote notification list, it should throw an error if there is something wrong with the HTTP call', async () => {
         notificationCenterObject.setConfig(configuration);
 
         fetchMock.mockRejectOnce(new Error('Error: something went wrong'));
 
         try {
-            await notificationCenterObject.deleteAllNotifications();
+            await notificationCenterObject.getAllNotifications();
         } catch (error) {
             expect(error.message).toEqual('Error: something went wrong');
         }
     });
 
-    test('If deleteAllNotifications method is called for a remote notification list, it should throw an error if the server response is not ok', async () => {
+    test('If getAllNotifications method is called for a remote notification list, it should throw an error if the server response is not ok', async () => {
         notificationCenterObject.setConfig(configuration);
 
         fetchMock.mockResponse(JSON.stringify({ ok: false }), { status: 400 });
 
         try {
-            await notificationCenterObject.deleteAllNotifications();
+            await notificationCenterObject.getAllNotifications();
         } catch (error) {
             expect(error.message).toEqual(400);
         }
     });
 
-    test('If deleteAllNotifications is called for a remote notification list, it should delete all the notifications from the list', async () => {
+    test('If getAllNotifications method is called for a remote notification list, it should return the same notifications list of the server', async () => {
         notificationCenterObject.setConfig(configuration);
 
         const mockNotificationsList: Notification[] = [{
@@ -79,10 +74,8 @@ describe('deleteAllNotifications method', () => {
 
         fetchMock.mockResponse(JSON.stringify(mockNotificationsList));
 
-        await notificationCenterObject.getAllNotifications();
+        const remoteNotificationsList = await notificationCenterObject.getAllNotifications();
 
-        await notificationCenterObject.deleteAllNotifications();
-
-        expect(notificationCenterObject.notificationsList).toHaveLength(0);
+        expect(remoteNotificationsList).toEqual(mockNotificationsList);
     });
 });

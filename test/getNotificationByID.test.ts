@@ -2,15 +2,30 @@ import { NotificationCenter } from '../src/index'
 import { Notification } from '../src/types';
 import 'jest-fetch-mock';
 
-describe('getNotificationByID method', () => {
+describe(' method', () => {
     let notificationCenterObject = new NotificationCenter;
-
-    beforeAll(() => {
-        fetchMock.resetMocks();
-    });
+    const configuration = { fetchUrl: 'anyValidURL1', createUrl: 'anyValidURL2', updateUrl: 'anyValidURL3' };
 
     beforeEach(() => {
+        fetchMock.resetMocks();
         notificationCenterObject.notificationsList = [];
+    });
+
+    test('If getNotificationByID is called, it should handle error when the notification ID does not exist', async () => {
+        const notification = {
+            title: 'There is a new notification',
+            message: 'Hello, im the only notification!'
+        };
+
+        const id = '';
+
+        await notificationCenterObject.sendNotification(notification);
+        try {
+            await notificationCenterObject.getNotificationByID(id);
+        } catch (error) {
+            expect(error.message).toEqual('Invalid ID');
+            expect(fetchMock).not.toHaveBeenCalled();
+        }
     });
 
     test('If getNotificationByID is called for a local notification list, it should return the notification whose id is taken as a parameter', async () => {
@@ -30,8 +45,31 @@ describe('getNotificationByID method', () => {
         expect(expectedNotification?.data).toEqual(notification);
     });
 
+    test('If getNotificationByID method is called for a remote notification list, it should throw an error if there is something wrong with the HTTP call', async () => {
+        notificationCenterObject.setConfig(configuration);
+
+        fetchMock.mockRejectOnce(new Error('Error: something went wrong'));
+
+        try {
+            await notificationCenterObject.getNotificationByID('notification.id');
+        } catch (error) {
+            expect(error.message).toEqual('Error: something went wrong');
+        }
+    });
+
+    test('If getNotificationByID method is called for a remote notification list, it should throw an error if the server response is not ok', async () => {
+        notificationCenterObject.setConfig(configuration);
+
+        fetchMock.mockResponse(JSON.stringify({ ok: false }), { status: 400 });
+
+        try {
+            await notificationCenterObject.getNotificationByID('notification.id');
+        } catch (error) {
+            expect(error.message).toEqual(400);
+        }
+    });
+
     test('If getNotificationByID is called for a remote notification list, it should return the notification whose id is taken as a parameter', async () => {
-        const configuration = { fetchUrl: 'anyValidURL1', createUrl: 'anyValidURL2', updateUrl: 'anyValidURL3' };
         notificationCenterObject.setConfig(configuration);
 
         const mockNotificationsList: Notification[] = [{
@@ -62,7 +100,7 @@ describe('getNotificationByID method', () => {
 
         fetchMock.mockResponse(JSON.stringify(mockNotificationsList));
 
-        const remoteNotificationsList = await notificationCenterObject.getNotifications();
+        const remoteNotificationsList = await notificationCenterObject.getAllNotifications();
 
         let lastNotification = remoteNotificationsList[remoteNotificationsList.length - 1];
 
