@@ -52,7 +52,7 @@ export class NotificationCenter {
             throw new Error('Invalid ID');
         }
         if (this.config) {
-            const response = await fetch(`${this.config.updateUrl}/${id}`);
+            const response = await fetch(`${this.config.fetchUrl}/${id}`);
             if (!response.ok) {
                 throw new Error(response.statusText);
             }
