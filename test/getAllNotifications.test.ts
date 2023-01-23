@@ -19,28 +19,12 @@ describe('getAllNotifications method', () => {
         expect(expectedNotificationsList).toEqual(localNotificationsList);
     });
 
-    test('If getAllNotifications method is called for a remote notification list, it should throw an error if there is something wrong with the HTTP call', async () => {
-        notificationCenterObject.setConfig(configuration);
-
-        fetchMock.mockRejectOnce(new Error('Error: something went wrong'));
-
-        try {
-            await notificationCenterObject.getAllNotifications();
-        } catch (error) {
-            expect(error.message).toEqual('Error: something went wrong');
-        }
-    });
-
     test('If getAllNotifications method is called for a remote notification list, it should throw an error if the server response is not ok', async () => {
         notificationCenterObject.setConfig(configuration);
 
-        fetchMock.mockResponse(JSON.stringify({ ok: false }), { status: 400 });
+        fetchMock.mockResponseOnce(JSON.stringify({ ok: false }), { status: 404 });
 
-        try {
-            await notificationCenterObject.getAllNotifications();
-        } catch (error) {
-            expect(error.message).toEqual(400);
-        }
+        await expect(notificationCenterObject.getAllNotifications()).rejects.toThrow();
     });
 
     test('If getAllNotifications method is called for a remote notification list, it should return the same notifications list of the server', async () => {

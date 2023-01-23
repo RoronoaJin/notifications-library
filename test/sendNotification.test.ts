@@ -11,38 +11,17 @@ describe('sendNotification method', () => {
         notificationCenterObject.notificationsList = [];
     });
 
-    test('If sendNotification method is called for a remote notification list, it should throw an error if there is something wrong with the HTTP call', async () => {
-        notificationCenterObject.setConfig(configuration);
-
-        fetchMock.mockRejectOnce(new Error('Error: something went wrong'));
-
-        const notification = {
-            title: 'There is a new notification',
-            message: 'Hello, im the first notification!'
-        };
-
-        try {
-            await notificationCenterObject.sendNotification(notification);
-        } catch (error) {
-            expect(error.message).toEqual('Error: something went wrong');
-        }
-    });
-
     test('If sendNotification method is called for a remote notification list, it should throw an error if the server response is not ok', async () => {
         notificationCenterObject.setConfig(configuration);
 
-        fetchMock.mockResponse(JSON.stringify({ ok: false }), { status: 400 });
-
         const notification = {
             title: 'There is a new notification',
             message: 'Hello, im the first notification!'
         };
 
-        try {
-            await notificationCenterObject.sendNotification(notification);
-        } catch (error) {
-            expect(error.message).toEqual(400);
-        }
+        fetchMock.mockResponseOnce(JSON.stringify({ ok: false }), { status: 404 });
+
+        await expect(notificationCenterObject.sendNotification(notification)).rejects.toThrow();
     });
 
     test('If sendNotification method is called and there is a configuration set in the singleton, a notification should be added to the notifications list', async () => {

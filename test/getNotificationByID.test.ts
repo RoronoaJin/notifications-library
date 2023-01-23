@@ -45,28 +45,12 @@ describe(' method', () => {
         expect(expectedNotification?.data).toEqual(notification);
     });
 
-    test('If getNotificationByID method is called for a remote notification list, it should throw an error if there is something wrong with the HTTP call', async () => {
-        notificationCenterObject.setConfig(configuration);
-
-        fetchMock.mockRejectOnce(new Error('Error: something went wrong'));
-
-        try {
-            await notificationCenterObject.getNotificationByID('notification.id');
-        } catch (error) {
-            expect(error.message).toEqual('Error: something went wrong');
-        }
-    });
-
     test('If getNotificationByID method is called for a remote notification list, it should throw an error if the server response is not ok', async () => {
         notificationCenterObject.setConfig(configuration);
 
-        fetchMock.mockResponse(JSON.stringify({ ok: false }), { status: 400 });
+        fetchMock.mockResponseOnce(JSON.stringify({ ok: false }), { status: 404 });
 
-        try {
-            await notificationCenterObject.getNotificationByID('notification.id');
-        } catch (error) {
-            expect(error.message).toEqual(400);
-        }
+        await expect(notificationCenterObject.getNotificationByID('notification.id')).rejects.toThrow();
     });
 
     test('If getNotificationByID is called for a remote notification list, it should return the notification whose id is taken as a parameter', async () => {
@@ -107,5 +91,11 @@ describe(' method', () => {
         const expectedNotification = await notificationCenterObject.getNotificationByID(lastNotification.id);
 
         expect(expectedNotification).toEqual(lastNotification);
+    });
+
+    test('If getNotificationByID method is called, it should throw an error if the notification is not found', async () => {
+        notificationCenterObject.setConfig(configuration);
+
+        await expect(notificationCenterObject.getNotificationByID('not-existing-id')).rejects.toThrow();
     });
 });

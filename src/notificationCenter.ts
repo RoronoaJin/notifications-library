@@ -1,6 +1,6 @@
 import { Notification, NotificationCenterConfig, SubscribeCallback } from "./types";
 
-const { v4: uuidv4 } = require('uuid');
+import { v4 as uuidv4 } from 'uuid';
 
 export class NotificationCenter {
 
@@ -37,16 +37,12 @@ export class NotificationCenter {
 
     async getAllNotifications(): Promise<Notification[]> {
         if (this.config) {
-            try {
-                const response = await fetch(this.config.fetchUrl);
-                if (!response.ok) {
-                    throw new Error(response.statusText);
-                }
-                const data = await response.json();
-                this.notificationsList = data;
-            } catch (error) {
-                console.error(error);
+            const response = await fetch(this.config.fetchUrl);
+            if (!response.ok) {
+                throw new Error(response.statusText);
             }
+            const data = await response.json();
+            this.notificationsList = data;
         }
         return this.notificationsList;
     }
@@ -55,8 +51,19 @@ export class NotificationCenter {
         if (!id) {
             throw new Error('Invalid ID');
         }
-        const notifications = await this.getAllNotifications();
-        return notifications.find(notification => notification.id === id) || null;
+        if (this.config) {
+            const response = await fetch(`${this.config.updateUrl}/${id}`);
+            if (!response.ok) {
+                throw new Error(response.statusText);
+            }
+        }
+        const notification = this.notificationsList.find(notification => notification.id === id) || null;
+        if (!notification) {
+            throw new Error('Notification not found');
+        }
+        else {
+            return notification;
+        }
     }
 
     async sendNotification(notificationData: any): Promise<Notification> {
@@ -69,17 +76,13 @@ export class NotificationCenter {
         };
 
         if (this.config) {
-            try {
-                const response = await fetch(this.config.createUrl, {
-                    method: 'POST',
-                    body: JSON.stringify(newNotification),
-                    headers: { 'Content-Type': 'application/json' },
-                });
-                if (!response.ok) {
-                    throw new Error(response.statusText);
-                }
-            } catch (error) {
-                console.error(error);
+            const response = await fetch(this.config.createUrl, {
+                method: 'POST',
+                body: JSON.stringify(newNotification),
+                headers: { 'Content-Type': 'application/json' },
+            });
+            if (!response.ok) {
+                throw new Error(response.statusText);
             }
         }
         this.notificationsList.push(newNotification);
@@ -91,69 +94,59 @@ export class NotificationCenter {
         if (!id) {
             throw new Error('Invalid ID');
         }
-        try {
-            if (this.config) {
-                const response = await fetch(`${this.config.updateUrl}/${id}`, { method: 'PUT' });
-                if (!response.ok) {
-                    throw new Error(response.statusText);
-                }
+        if (this.config) {
+            const response = await fetch(`${this.config.updateUrl}/${id}`, { method: 'PUT' });
+            if (!response.ok) {
+                throw new Error(response.statusText);
             }
-            const notification = this.notificationsList.find(notification => notification.id === id);
-            if (notification) {
-                notification.readAt = Date.now();
-                this.notifySubscribers(notification);
-            }
-        } catch (error) {
-            console.error(error);
+        }
+        const notification = this.notificationsList.find(notification => notification.id === id);
+        if (notification) {
+            notification.readAt = Date.now();
+            this.notifySubscribers(notification);
+        }
+        else {
+            throw new Error('Notification not found');
         }
     }
 
     async markAllAsRead(): Promise<void> {
-        try {
-            if (this.config) {
-                const response = await fetch(`${this.config.updateUrl}`, { method: 'PUT' });
-                if (!response.ok) {
-                    throw new Error(response.statusText);
-                }
+        if (this.config) {
+            const response = await fetch(`${this.config.updateUrl}`, { method: 'PUT' });
+            if (!response.ok) {
+                throw new Error(response.statusText);
             }
-            this.notificationsList.forEach(notification => {
-                if (!notification.readAt) {
-                    notification.readAt = Date.now();
-                }
-            });
-        } catch (error) {
-            console.error(error);
         }
+        this.notificationsList.forEach(notification => {
+            if (!notification.readAt) {
+                notification.readAt = Date.now();
+            }
+            else {
+                throw new Error('All the notifications are marked as read');
+            }
+        });
     }
 
     async deleteNotificationByID(id: string): Promise<void> {
         if (!id) {
             throw new Error('Invalid ID');
         }
-        try {
-            if (this.config) {
-                const response = await fetch(`${this.config.updateUrl}/${id}`, { method: 'DELETE' });
-                if (!response.ok) {
-                    throw new Error(response.statusText);
-                }
+        if (this.config) {
+            const response = await fetch(`${this.config.updateUrl}/${id}`, { method: 'DELETE' });
+            if (!response.ok) {
+                throw new Error(response.statusText);
             }
-            this.notificationsList = this.notificationsList.filter(notification => notification.id !== id);
-        } catch (error) {
-            console.error(error);
         }
+        this.notificationsList = this.notificationsList.filter(notification => notification.id !== id);
     }
 
     async deleteAllNotifications(): Promise<void> {
-        try {
-            if (this.config) {
-                const response = await fetch(this.config.updateUrl, { method: 'DELETE' });
-                if (!response.ok) {
-                    throw new Error(response.statusText);
-                }
+        if (this.config) {
+            const response = await fetch(this.config.updateUrl, { method: 'DELETE' });
+            if (!response.ok) {
+                throw new Error(response.statusText);
             }
-            this.notificationsList = [];
-        } catch (error) {
-            console.error(error);
         }
+        this.notificationsList = [];
     }
 }

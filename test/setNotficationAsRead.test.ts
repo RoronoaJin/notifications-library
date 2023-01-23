@@ -38,28 +38,13 @@ describe('setNotficationAsRead method', () => {
         expect(lastNotification.readAt).toBeDefined();
     });
 
-    test('If setNotficationAsRead method is called for a remote notification list, it should throw an error if there is something wrong with the HTTP call', async () => {
-        notificationCenterObject.setConfig(configuration);
-
-        fetchMock.mockRejectOnce(new Error('Error: something went wrong'));
-
-        try {
-            await notificationCenterObject.setNotficationAsRead('notification.id');
-        } catch (error) {
-            expect(error.message).toEqual('Error: something went wrong');
-        }
-    });
 
     test('If setNotficationAsRead method is called for a remote notification list, it should throw an error if the server response is not ok', async () => {
         notificationCenterObject.setConfig(configuration);
 
-        fetchMock.mockResponse(JSON.stringify({ ok: false }), { status: 400 });
+        fetchMock.mockResponseOnce(JSON.stringify({ ok: false }), { status: 404 });
 
-        try {
-            await notificationCenterObject.setNotficationAsRead('notification.id');
-        } catch (error) {
-            expect(error.message).toEqual(400);
-        }
+        await expect(notificationCenterObject.setNotficationAsRead('notification.id')).rejects.toThrow();
     });
 
     test('If setNotficationAsRead method is called for a remote notifcation list, it should mark as read the notification whose id is taken as a parameter', async () => {
@@ -107,7 +92,7 @@ describe('setNotficationAsRead method', () => {
         expect(lastElement.readAt).toBeDefined();
     });
 
-    test('If setNotficationAsRead method is launched, it should call the subscribed callback', async () => {
+    test('If setNotficationAsRead method is called, it should call the subscribed callback', async () => {
         notificationCenterObject.setConfig(configuration);
 
         const mockNotificationsList: Notification[] = [{
@@ -146,5 +131,11 @@ describe('setNotficationAsRead method', () => {
         await notificationCenterObject.setNotficationAsRead(lastElement.id);
 
         expect(fn).toBeCalled();
+    });
+
+    test('If setNotficationAsRead method is called, it should throw an error if the notification is not found', async () => {
+        notificationCenterObject.setConfig(configuration);
+
+        await expect(notificationCenterObject.setNotficationAsRead('not-existing-id')).rejects.toThrow();
     });
 });
