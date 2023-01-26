@@ -11,23 +11,6 @@ describe(' method', () => {
         notificationCenterObject.notificationsList = [];
     });
 
-    test('If getNotificationByID is called, it should handle error when the notification ID does not exist', async () => {
-        const notification = {
-            title: 'There is a new notification',
-            message: 'Hello, im the only notification!'
-        };
-
-        const id = '';
-
-        await notificationCenterObject.sendNotification(notification);
-        try {
-            await notificationCenterObject.getNotificationByID(id);
-        } catch (error) {
-            expect(error.message).toEqual('Invalid ID');
-            expect(fetchMock).not.toHaveBeenCalled();
-        }
-    });
-
     test('If getNotificationByID is called for a local notification list, it should return the notification whose id is taken as a parameter', async () => {
         const localNotificationsList = notificationCenterObject.notificationsList;
 

@@ -48,9 +48,6 @@ export class NotificationCenter {
     }
 
     async getNotificationByID(id: string): Promise<Notification | null> {
-        if (!id) {
-            throw new Error('Invalid ID');
-        }
         if (this.config) {
             const response = await fetch(`${this.config.fetchUrl}/${id}`);
             if (!response.ok) {
@@ -91,9 +88,6 @@ export class NotificationCenter {
     }
 
     async setNotficationAsRead(id: string): Promise<void> {
-        if (!id) {
-            throw new Error('Invalid ID');
-        }
         if (this.config) {
             const response = await fetch(`${this.config.updateUrl}/${id}`, { method: 'PUT' });
             if (!response.ok) {

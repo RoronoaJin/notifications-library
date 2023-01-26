@@ -11,18 +11,6 @@ describe('setNotficationAsRead method', () => {
         notificationCenterObject.notificationsList = [];
     });
 
-    test('If setNotficationAsRead is called, it should handle error when the notification ID does not exist', async () => {
-        const id = '';
-
-        try {
-            await notificationCenterObject.setNotficationAsRead(id);
-        } catch (error) {
-            expect(error.message).toEqual('Invalid ID');
-            expect(fetchMock).not.toHaveBeenCalled();
-        }
-    });
-
-
     test('If setNotficationAsRead method is called for a local notification list, it should mark as read the notification whose id is taken as a parameter', async () => {
         const localNotificationsList = notificationCenterObject.notificationsList;
 
