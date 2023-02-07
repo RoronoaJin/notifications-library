@@ -93,15 +93,14 @@ export class NotificationCenter {
 
   async markNotificationAsRead(id: string): Promise<void> {
     if (this.config) {
-      const body = JSON.stringify({
-        readAt: Date.now(),
-      });
       const response = await fetch(`${this.config.updateUrl}/${id}`, {
-        method: 'PUT',
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: body,
+        body: JSON.stringify({
+          readAt: Date.now(),
+        }),
       });
       if (!response.ok) {
         throw new Error(response.statusText);
@@ -119,21 +118,9 @@ export class NotificationCenter {
   }
 
   async markAllAsRead(): Promise<void> {
-    if (this.config) {
-      const response = await fetch(`${this.config.updateUrl}`, {
-        method: 'PUT',
-      });
-      if (!response.ok) {
-        throw new Error(response.statusText);
-      }
+    for (const notification of this.notificationsList) {
+      await this.markNotificationAsRead(notification.id);
     }
-    this.notificationsList.forEach(notification => {
-      if (!notification.readAt) {
-        notification.readAt = Date.now();
-      } else {
-        throw new Error('All the notifications are marked as read');
-      }
-    });
   }
 
   async deleteNotificationByID(id: string): Promise<void> {
