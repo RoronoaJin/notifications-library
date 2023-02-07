@@ -50,11 +50,11 @@ const notification = {
 await notificationCenterObject.sendNotification(notification);
 ```
 
-### setNotficationAsRead(id: string)
+### markNotificationAsRead(id: string)
 This method allow the user to mark a specific notification by passing its ID as argument
 ```TypeScript
 // notification.id is the id of the notification you want to mark as read
-await notificationCenterObject.setNotficationAsRead(notification.id);
+await notificationCenterObject.markNotificationAsRead(notification.id);
 ```
 
 ### markAllAsRead()
